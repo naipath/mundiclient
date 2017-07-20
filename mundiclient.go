@@ -10,6 +10,7 @@ const (
 	startOfText       = 0x02
 	endOfTransmission = 0x04
 	emptyLength       = 0x00
+	acknowledge       = 0x06
 )
 
 type MundiClient struct {
