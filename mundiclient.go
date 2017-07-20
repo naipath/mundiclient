@@ -25,10 +25,6 @@ func (m MundiClient) Close() {
 }
 
 func (m MundiClient) sendAndReceive(message []byte) []byte {
-	return m.sendAndReceiveWithCustomDelim(message, endOfTransmission)
-}
-
-func (m MundiClient) sendAndReceiveWithCustomDelim(message []byte, delim byte) []byte {
 	m.conn.Write(message)
 
 	reply := make([]byte, 1024)
@@ -42,6 +38,7 @@ func (m MundiClient) sendAndReceiveWithCustomDelim(message []byte, delim byte) [
 		}
 	}
 	panic("Got no response!")
+
 }
 
 func createConnection(ip string, port int) net.Conn {

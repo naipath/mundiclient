@@ -29,7 +29,11 @@ func (m MundiClient) GetCounters() Counters {
 func (m MundiClient) ResetCurrentCount() {
 	lsb, msb := calculateChecksum(resetCurrentCount, emptyLength)
 	message := []byte{startOfText, resetCurrentCount, emptyLength, lsb, msb, endOfTransmission}
-	m.sendAndReceiveWithCustomDelim(message, acknowledgeResetCount)
+	response := m.sendAndReceive(message)
+
+	if response[0] != acknowledgeResetCount {
+		panic("Reset not acknowledged")
+	}
 }
 
 type IncrementalCounterValue struct {
@@ -47,5 +51,4 @@ func (m MundiClient) GetIncrementalCounterValue(fieldId byte) IncrementalCounter
 		response[3],
 		string(response[5 : response[4]*2+5]),
 	}
-
 }
