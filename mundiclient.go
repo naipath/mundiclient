@@ -1,10 +1,8 @@
 package mundiclient
 
 import (
-	"bufio"
 	"fmt"
 	"net"
-	"os"
 	"strconv"
 )
 
@@ -32,22 +30,25 @@ func (m MundiClient) sendAndReceive(message []byte) []byte {
 
 func (m MundiClient) sendAndReceiveWithCustomDelim(message []byte, delim byte) []byte {
 	m.conn.Write(message)
-	result, err := bufio.NewReader(m.conn).ReadBytes(delim)
-	fmt.Printf("Got the following response:\n%08b\n", result)
 
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	reply := make([]byte, 1024)
+
+	m.conn.Read(reply)
+
+	for i := len(reply) - 1; i >= 0; i-- {
+		if reply[i] != 0x00 {
+			fmt.Printf("Got the following response:\n%08b\n", reply[:i+1])
+			return reply[:i+1]
+		}
 	}
-	return result
+	panic("Got no response!")
 }
 
 func createConnection(ip string, port int) net.Conn {
 	conn, err := net.Dial("tcp", ip+":"+strconv.Itoa(port))
 
 	if err != nil {
-		fmt.Print("error opening connection\n", err)
-		os.Exit(1)
+		panic(err)
 	}
 	return conn
 }
