@@ -55,7 +55,8 @@ func (m MundiClient) GetIncrementalCounterValue(fieldId byte) IncrementalCounter
 
 func (m MundiClient) SetIncrementalCounterValue(input IncrementalCounterValue) {
 	length := byte(len(input.Data)) + 0x2
-	lsb, msb := calculateChecksum(0x00)
+
+	lsb, msb := calculateChecksum(append([]byte{setIncrementalCounterValue, length, input.FieldID, byte(len(input.Data))}, []byte(input.Data)...)...)
 	startOfMessage := []byte{
 		startOfText,
 		setIncrementalCounterValue,
