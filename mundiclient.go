@@ -27,8 +27,12 @@ func (m MundiClient) Close() {
 }
 
 func (m MundiClient) sendAndReceive(message []byte) []byte {
+	return m.sendAndReceiveWithCustomDelim(message, endOfTransmission)
+}
+
+func (m MundiClient) sendAndReceiveWithCustomDelim(message []byte, delim byte) []byte {
 	m.conn.Write(message)
-	result, err := bufio.NewReader(m.conn).ReadBytes(endOfTransmission)
+	result, err := bufio.NewReader(m.conn).ReadBytes(delim)
 	fmt.Printf("Got the following response:\n%08b\n", result)
 
 	if err != nil {
