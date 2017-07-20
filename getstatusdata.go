@@ -2,6 +2,10 @@ package mundiclient
 
 import "encoding/binary"
 
+const (
+	getStatusData = 0x57
+)
+
 type StatusData struct {
 	Version                            uint16
 	PrintStatus                        bool
@@ -39,8 +43,8 @@ type StatusData struct {
 }
 
 func (m MundiClient) GetStatusData() StatusData {
-	lsb, msb := calculateChecksum(0x57, emptyLength)
-	response := m.sendAndReceive([]byte{startOfText, 0x57, emptyLength, lsb, msb, endOfTransmission})
+	lsb, msb := calculateChecksum(getStatusData, emptyLength)
+	response := m.sendAndReceive([]byte{startOfText, getStatusData, emptyLength, lsb, msb, endOfTransmission})
 
 	return StatusData{
 		binary.BigEndian.Uint16(response[3:5]), //Version

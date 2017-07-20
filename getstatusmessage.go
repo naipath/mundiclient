@@ -1,8 +1,12 @@
 package mundiclient
 
+const (
+	getStatusMessage = 0x58
+)
+
 func (m MundiClient) GetStatusMessage() string {
-	lsb, msb := calculateChecksum(0x58, emptyLength)
-	response := m.sendAndReceive([]byte{startOfText, 0x58, emptyLength, lsb, msb, endOfTransmission})
+	lsb, msb := calculateChecksum(getStatusMessage, emptyLength)
+	response := m.sendAndReceive([]byte{startOfText, getStatusMessage, emptyLength, lsb, msb, endOfTransmission})
 	length := response[2]
 
 	statusMessage := string(response[3 : length+3])

@@ -11,7 +11,6 @@ import (
 const (
 	startOfText       = 0x02
 	endOfTransmission = 0x04
-	getVersionID      = 0x56
 	emptyLength       = 0x00
 )
 
