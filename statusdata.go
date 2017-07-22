@@ -3,7 +3,8 @@ package mundiclient
 import "encoding/binary"
 
 const (
-	getStatusData = 0x57
+	getStatusData    = 0x57
+	getStatusMessage = 0x58
 )
 
 type StatusData struct {
@@ -81,4 +82,14 @@ func (m MundiClient) GetStatusData() StatusData {
 		response[9]&16 != 0,                    //GalvoTemperature
 		response[9]&8 != 0,                     //GalvoCableDisconnected
 	}
+}
+
+func (m MundiClient) GetStatusMessage() string {
+	lsb, msb := calculateChecksum(getStatusMessage, emptyLength)
+	response := m.sendAndReceive([]byte{startOfText, getStatusMessage, emptyLength, lsb, msb, endOfTransmission})
+	length := response[2]
+
+	statusMessage := string(response[3 : length+3])
+
+	return statusMessage
 }
