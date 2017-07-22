@@ -7,16 +7,16 @@ const (
 )
 
 type LaserParameter struct {
-	Group        uint16
-	Frequency    uint16
-	Duty         uint16
-	MarkSpeed    uint16
-	JumpSpeed    uint16
-	OffDelay     uint16
-	OnDelay      uint16
-	JumpDelay    uint16
-	MarkDelay    uint16
-	PolygonDelay uint16
+	Group        uint16 // Range: 0-255
+	Frequency    uint16 // Range: 500-50000 Hz
+	Duty         uint16 // Range: 1-85%
+	MarkSpeed    uint16 // Range: 10-20,000 mm/s
+	JumpSpeed    uint16 // Range: 10-20,000 mm/s
+	OffDelay     uint16 // Range: 2-8000 μSeconds
+	OnDelay      uint16 // Range: -8000 to 8000 μSeconds
+	JumpDelay    uint16 // Range: 0-32000 μSeconds
+	MarkDelay    uint16 // Range: 0-32000 μSeconds
+	PolygonDelay uint16 // Range: 0-32000 μSeconds
 }
 
 func (m MundiClient) GetLaserParameter(parameterGroup byte) LaserParameter {
