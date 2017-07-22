@@ -26,6 +26,7 @@ func (m MundiClient) Close() {
 }
 
 func (m MundiClient) sendAndReceive(message []byte) []byte {
+	fmt.Printf("Sending the following request:\n%08b\n", message)
 	m.conn.Write(message)
 
 	reply := make([]byte, 1024)
@@ -39,16 +40,18 @@ func (m MundiClient) sendAndReceive(message []byte) []byte {
 		}
 	}
 	panic("Got no response!")
-
 }
 
 func createConnection(ip string, port int) net.Conn {
-	conn, err := net.Dial("tcp", ip+":"+strconv.Itoa(port))
-
-	if err != nil {
-		panic(err)
+	var lastError error
+	for i := 0; i < 10; i++ {
+		conn, err := net.Dial("tcp", ip+":"+strconv.Itoa(port))
+		if err == nil {
+			return conn
+		}
+		lastError = err
 	}
-	return conn
+	panic(lastError)
 }
 
 func calculateChecksum(input ...byte) (byte, byte) {
