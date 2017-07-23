@@ -5,6 +5,6 @@ const (
 )
 
 func (m MundiClient) GetVersion() string {
-	response := m.sendAndReceive(constructMessage([]byte{getVersionID, emptyLength}))
+	response := m.sendAndReceiveMessage([]byte{getVersionID, emptyLength})
 	return string(response[3:9])
 }

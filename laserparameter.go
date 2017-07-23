@@ -22,7 +22,7 @@ type LaserParameter struct {
 }
 
 func (m MundiClient) GetLaserParameter(group byte) LaserParameter {
-	response := m.sendAndReceive(constructMessage([]byte{getLaserParameter, 0x01, group}))
+	response := m.sendAndReceiveMessage([]byte{getLaserParameter, 0x01, group})
 	return LaserParameter{
 		response[4],
 		binary.BigEndian.Uint16([]byte{response[8], response[7]}),
@@ -41,8 +41,8 @@ func (m MundiClient) SetLaserParameterDuty(group byte, duty byte) {
 	var dutyID byte = 0xE2
 	var length byte = 0x06
 
-	message := constructMessage([]byte{setLaserParameter, length, setLaserParameterGroupID, group, 0, dutyID, duty, 0})
-	response := m.sendAndReceive(message)
+	message := []byte{setLaserParameter, length, setLaserParameterGroupID, group, 0, dutyID, duty, 0}
+	response := m.sendAndReceiveMessage(message)
 
 	if response[0] != acknowledge {
 		panic("Could not set Laser Parameter")
@@ -56,8 +56,8 @@ func (m MundiClient) SetLaserParameterFrequency(group byte, frequency uint16) {
 
 	msbFrequency, lsbFrequency := byte(frequency>>8), byte(frequency&0xff)
 
-	message := constructMessage([]byte{setLaserParameter, length, setLaserParameterGroupID, group, 0, frequencyID, lsbFrequency, msbFrequency})
-	response := m.sendAndReceive(message)
+	message := []byte{setLaserParameter, length, setLaserParameterGroupID, group, 0, frequencyID, lsbFrequency, msbFrequency}
+	response := m.sendAndReceiveMessage(message)
 
 	if response[0] != acknowledge {
 		panic("Could not set Laser Parameter")

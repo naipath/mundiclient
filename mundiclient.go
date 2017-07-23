@@ -25,9 +25,13 @@ func (m MundiClient) Close() {
 	m.conn.Close()
 }
 
-func (m MundiClient) sendAndReceive(message []byte) []byte {
-	fmt.Printf("Sending the following request:\n%08b\n", message)
-	m.conn.Write(message)
+func (m MundiClient) sendAndReceiveMessage(message []byte) []byte {
+	return m.sendAndReceive(constructMessage(message))
+}
+
+func (m MundiClient) sendAndReceive(bytes []byte) []byte {
+	fmt.Printf("Sending the following request:\n%08b\n", bytes)
+	m.conn.Write(bytes)
 
 	reply := make([]byte, 1024)
 

@@ -18,9 +18,9 @@ func (m MundiClient) offsetField(fieldID byte, x int16, y int16) {
 	msbX, lsbX := byte(x>>8), byte(x&0xFF)
 	msbY, lsbY := byte(y>>8), byte(y&0xFF)
 
-	message := constructMessage([]byte{offsetField, length, fieldID, msbX, lsbX, msbY, lsbY})
+	message := []byte{offsetField, length, fieldID, msbX, lsbX, msbY, lsbY}
 
-	response := m.sendAndReceive(message)
+	response := m.sendAndReceiveMessage(message)
 
 	if response[0] != acknowledge {
 		panic("Could not alter offset of field")

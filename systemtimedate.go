@@ -18,9 +18,9 @@ func (m MundiClient) GetSystemTime() time.Time {
 }
 
 func (m MundiClient) getSystemTime() []byte {
-	return m.sendAndReceive(constructMessage([]byte{getSystemTime, emptyLength}))
+	return m.sendAndReceiveMessage([]byte{getSystemTime, emptyLength})
 }
 
 func (m MundiClient) getSystemDate() []byte {
-	return m.sendAndReceive(constructMessage([]byte{getSystemDate, emptyLength}))
+	return m.sendAndReceiveMessage([]byte{getSystemDate, emptyLength})
 }

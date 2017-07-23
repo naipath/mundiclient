@@ -15,7 +15,7 @@ type Counters struct {
 }
 
 func (m MundiClient) GetCounters() Counters {
-	response := m.sendAndReceive(constructMessage([]byte{getCounters, emptyLength}))
+	response := m.sendAndReceiveMessage([]byte{getCounters, emptyLength})
 
 	lifetime := binary.BigEndian.Uint32(response[3:7])
 	recent := binary.BigEndian.Uint32(response[7:11])
@@ -24,7 +24,7 @@ func (m MundiClient) GetCounters() Counters {
 }
 
 func (m MundiClient) ResetCurrentCount() {
-	response := m.sendAndReceive(constructMessage([]byte{resetCurrentCount, emptyLength}))
+	response := m.sendAndReceiveMessage([]byte{resetCurrentCount, emptyLength})
 
 	if response[0] != acknowledge {
 		panic("Reset not acknowledged")
@@ -38,7 +38,7 @@ type IncrementalCounterValue struct {
 
 func (m MundiClient) GetIncrementalCounterValue(fieldId byte) IncrementalCounterValue {
 	var length byte = 0x01
-	response := m.sendAndReceive(constructMessage([]byte{getIncrementalCounterValue, length, fieldId}))
+	response := m.sendAndReceiveMessage([]byte{getIncrementalCounterValue, length, fieldId})
 
 	return IncrementalCounterValue{
 		response[3],
@@ -50,9 +50,9 @@ func (m MundiClient) SetIncrementalCounterValue(input IncrementalCounterValue) {
 	length := byte(len(input.Data)) + 0x2 // Double check for utf-8 to ansi conversion
 
 	startOfMessage := []byte{setIncrementalCounterValue, length, input.FieldID, byte(len(input.Data))}
-	message := constructMessage(append(startOfMessage, []byte(input.Data)...))
+	message := append(startOfMessage, []byte(input.Data)...)
 
-	response := m.sendAndReceive(message)
+	response := m.sendAndReceiveMessage(message)
 
 	if response[0] != acknowledge {
 		panic("Could not set incremental counter")

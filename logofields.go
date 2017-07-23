@@ -28,7 +28,7 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 	message = append(message, fileNameLength...)
 	message = append(message, []byte(fileName)...)
 
-	response := m.sendAndReceive(constructMessage(message))
+	response := m.sendAndReceiveMessage(message)
 
 	if response[0] != acknowledge {
 		panic("error sending logo")
@@ -46,9 +46,9 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 		fmt.Println("Now at ", i*500)
 		fmt.Println("Total is ", fileSize)
 
-		logoDataMessage := constructMessage(append([]byte{uploadLogoData, 0x01, 0xF4}, dataToSend...))
+		logoDataMessage := append([]byte{uploadLogoData, 0x01, 0xF4}, dataToSend...)
 
-		response = m.sendAndReceive(logoDataMessage)
+		response = m.sendAndReceiveMessage(logoDataMessage)
 
 		if response[0] != acknowledge {
 			panic("error sending part of logo: " + string(i))
@@ -69,7 +69,7 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 	lastLogoBlockMessage = append(lastLogoBlockMessage, lastData...)
 	lastLogoBlockMessage = append(lastLogoBlockMessage, logoChecksum...)
 
-	response = m.sendAndReceive(constructMessage(lastLogoBlockMessage))
+	response = m.sendAndReceiveMessage(lastLogoBlockMessage)
 	if response[0] != acknowledge {
 		panic("could not save logo")
 	}

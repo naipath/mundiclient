@@ -13,8 +13,8 @@ func (m MundiClient) SelectMarkingFile(filename string) {
 	data := []byte(filename)
 	length := byte(len(data))
 
-	message := constructMessage(append([]byte{selectMarkingFile, length}, data...))
-	response := m.sendAndReceive(message)
+	message := append([]byte{selectMarkingFile, length}, data...)
+	response := m.sendAndReceiveMessage(message)
 
 	if response[0] != acknowledge {
 		panic("could not select marking file")
@@ -22,12 +22,12 @@ func (m MundiClient) SelectMarkingFile(filename string) {
 }
 
 func (m MundiClient) GetCurrentMarkingFile() string {
-	response := m.sendAndReceive(constructMessage([]byte{getCurrentMarkingFile, emptyLength}))
+	response := m.sendAndReceiveMessage([]byte{getCurrentMarkingFile, emptyLength})
 	return string(response[3 : response[2]+3])
 }
 
 func (m MundiClient) GetMarkingFiles() []string {
-	response := m.sendAndReceive(constructMessage([]byte{getMarkingFiles, emptyLength}))
+	response := m.sendAndReceiveMessage([]byte{getMarkingFiles, emptyLength})
 
 	var markingFiles []string
 	for {
@@ -46,7 +46,7 @@ func (m MundiClient) DownloadFile(markingfilename string) (string, []byte) {
 	length := byte(len(markingfilename))
 	data := []byte(markingfilename)
 
-	response := m.sendAndReceive(constructMessage(append([]byte{downloadFile, length}, data...)))
+	response := m.sendAndReceiveMessage(append([]byte{downloadFile, length}, data...))
 
 	if response[0] != acknowledge {
 		panic("Did not get acknowledge for download")
