@@ -8,11 +8,8 @@ func (m MundiClient) ModifyExternalField(fieldID byte, data string) {
 
 	length := byte(len(data)) * 2
 
-	lsb, msb := calculateChecksum(append([]byte{modifyExternalField, length}, []byte(data)...)...)
-	startOfMessage := []byte{startOfText, modifyExternalField, length, fieldID}
-	endOfMessage := []byte{lsb, msb, endOfTransmission}
-
-	message := append(append(startOfMessage, []byte(data)...), endOfMessage...)
+	startOfMessage := []byte{modifyExternalField, length, fieldID}
+	message := constructMessage(append(startOfMessage, []byte(data)...))
 
 	response := m.sendAndReceive(message)
 

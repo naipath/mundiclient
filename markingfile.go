@@ -13,13 +13,7 @@ func (m MundiClient) SelectMarkingFile(filename string) {
 	data := []byte(filename)
 	length := byte(len(data))
 
-	lsb, msb := calculateChecksum(append([]byte{selectMarkingFile, length}, data...)...)
-
-	startOfMessage := []byte{startOfText, selectMarkingFile, length}
-	endOfMessage := []byte{lsb, msb, endOfTransmission}
-
-	message := append(append(startOfMessage, data...), endOfMessage...)
-
+	message := constructMessage(append([]byte{selectMarkingFile, length}, data...))
 	response := m.sendAndReceive(message)
 
 	if response[0] != acknowledge {
@@ -28,23 +22,14 @@ func (m MundiClient) SelectMarkingFile(filename string) {
 }
 
 func (m MundiClient) GetCurrentMarkingFile() string {
-	lsb, msb := calculateChecksum(getCurrentMarkingFile, emptyLength)
-	message := []byte{startOfText, getCurrentMarkingFile, emptyLength, lsb, msb, endOfTransmission}
-
-	response := m.sendAndReceive(message)
-
+	response := m.sendAndReceive(constructMessage([]byte{getCurrentMarkingFile, emptyLength}))
 	return string(response[3 : response[2]+3])
 }
 
 func (m MundiClient) GetMarkingFiles() []string {
-	lsb, msb := calculateChecksum(getMarkingFiles, emptyLength)
-
-	message := []byte{startOfText, getMarkingFiles, emptyLength, lsb, msb, endOfTransmission}
-
-	response := m.sendAndReceive(message)
+	response := m.sendAndReceive(constructMessage([]byte{getMarkingFiles, emptyLength}))
 
 	var markingFiles []string
-
 	for {
 		if response[0] == 0x15 {
 			panic("error occured GetMarkingFiles")
@@ -61,15 +46,7 @@ func (m MundiClient) DownloadFile(markingfilename string) (string, []byte) {
 	length := byte(len(markingfilename))
 	data := []byte(markingfilename)
 
-	checksum := []byte{downloadFile, length}
-	checksum = append(checksum, data...)
-	lsb, msb := calculateChecksum(checksum...)
-
-	message := []byte{startOfText, downloadFile, length}
-	message = append(message, data...)
-	message = append(message, lsb, msb, endOfTransmission)
-
-	response := m.sendAndReceive(message)
+	response := m.sendAndReceive(constructMessage(append([]byte{downloadFile, length}, data...)))
 
 	if response[0] != acknowledge {
 		panic("Did not get acknowledge for download")

@@ -23,20 +23,12 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 	fileName := filepath.Base(logo.Name())
 	fileNameLength := []byte{byte(len(fileName) >> 8), byte(len(fileName) & 0xff)}
 
-	checksum := []byte{uploadLogo}
-	checksum = append(checksum, fileSizeLength...)
-	checksum = append(checksum, fileNameLength...)
-	checksum = append(checksum, []byte(fileName)...)
-
-	lsb, msb := calculateChecksum(checksum...)
-
-	message := []byte{startOfText, uploadLogo}
+	message := []byte{uploadLogo}
 	message = append(message, fileSizeLength...)
 	message = append(message, fileNameLength...)
 	message = append(message, []byte(fileName)...)
-	message = append(message, lsb, msb, endOfTransmission)
 
-	response := m.sendAndReceive(message)
+	response := m.sendAndReceive(constructMessage(message))
 
 	if response[0] != acknowledge {
 		panic("error sending logo")
@@ -51,18 +43,10 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 
 		dataToSend := b[i*500 : i*500+500]
 
-		var checksum uint16 = uploadLogoData
-		for _, element := range dataToSend {
-			checksum += uint16(element)
-		}
-		checksum += 0x01 + 0xF4
-
-		logoDataMessage := []byte{startOfText, uploadLogoData, 0x01, 0xF4}
-		logoDataMessage = append(logoDataMessage, dataToSend...)
-		logoDataMessage = append(logoDataMessage, byte(checksum&0xFF), byte(checksum>>8), endOfTransmission)
-
 		fmt.Println("Now at ", i*500)
 		fmt.Println("Total is ", fileSize)
+
+		logoDataMessage := constructMessage(append([]byte{uploadLogoData, 0x01, 0xF4}, dataToSend...))
 
 		response = m.sendAndReceive(logoDataMessage)
 
@@ -81,15 +65,11 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 	lastDataLength := uint16(len(lastData))
 	msbLastMessage, lsbLastMessage := byte(lastDataLength>>8), byte(lastDataLength&0xff)
 
-	lastDataChecksum := []byte{lastUploadLogoData, logoChecksum[0], logoChecksum[1], logoChecksum[2], logoChecksum[3], msbLastMessage, lsbLastMessage}
-	lastDatalsb, lastDatamsb := calculateChecksum(append(lastDataChecksum, lastData...)...)
-
-	lastLogoBlockMessage := []byte{startOfText, lastUploadLogoData, msbLastMessage, lsbLastMessage}
+	lastLogoBlockMessage := []byte{lastUploadLogoData, msbLastMessage, lsbLastMessage}
 	lastLogoBlockMessage = append(lastLogoBlockMessage, lastData...)
 	lastLogoBlockMessage = append(lastLogoBlockMessage, logoChecksum...)
-	lastLogoBlockMessage = append(lastLogoBlockMessage, []byte{lastDatalsb, lastDatamsb, endOfTransmission}...)
 
-	response = m.sendAndReceive(lastLogoBlockMessage)
+	response = m.sendAndReceive(constructMessage(lastLogoBlockMessage))
 	if response[0] != acknowledge {
 		panic("could not save logo")
 	}
