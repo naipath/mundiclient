@@ -22,12 +22,7 @@ type LaserParameter struct {
 }
 
 func (m MundiClient) GetLaserParameter(group byte) LaserParameter {
-	var length byte = 0x01
-	lsb, msb := calculateChecksum(getLaserParameter, length, group)
-	message := []byte{startOfText, getLaserParameter, length, group, lsb, msb, endOfTransmission}
-
-	response := m.sendAndReceive(message)
-
+	response := m.sendAndReceive(constructMessage([]byte{getLaserParameter, 0x01, group}))
 	return LaserParameter{
 		response[4],
 		binary.BigEndian.Uint16([]byte{response[8], response[7]}),
@@ -43,13 +38,10 @@ func (m MundiClient) GetLaserParameter(group byte) LaserParameter {
 }
 
 func (m MundiClient) SetLaserParameterDuty(group byte, duty byte) {
-
 	var dutyID byte = 0xE2
 	var length byte = 0x06
 
-	lsb, msb := calculateChecksum(setLaserParameter, length, setLaserParameterGroupID, group, dutyID, duty)
-	message := []byte{startOfText, setLaserParameter, length, setLaserParameterGroupID, group, 0, dutyID, duty, 0, lsb, msb, endOfTransmission}
-
+	message := constructMessage([]byte{setLaserParameter, length, setLaserParameterGroupID, group, 0, dutyID, duty, 0})
 	response := m.sendAndReceive(message)
 
 	if response[0] != acknowledge {
@@ -64,9 +56,7 @@ func (m MundiClient) SetLaserParameterFrequency(group byte, frequency uint16) {
 
 	msbFrequency, lsbFrequency := byte(frequency>>8), byte(frequency&0xff)
 
-	lsb, msb := calculateChecksum(setLaserParameter, length, setLaserParameterGroupID, group, frequencyID, msbFrequency, lsbFrequency)
-	message := []byte{startOfText, setLaserParameter, length, setLaserParameterGroupID, group, 0, frequencyID, lsbFrequency, msbFrequency, lsb, msb, endOfTransmission}
-
+	message := constructMessage([]byte{setLaserParameter, length, setLaserParameterGroupID, group, 0, frequencyID, lsbFrequency, msbFrequency})
 	response := m.sendAndReceive(message)
 
 	if response[0] != acknowledge {

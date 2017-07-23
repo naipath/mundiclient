@@ -45,8 +45,7 @@ func (m MundiClient) GetFieldContents(fieldID byte) Field {
 }
 
 func buildFieldContentsRequest(fieldID byte) []byte {
-	lsb, msb := calculateChecksum(getFieldContents, 0x01, fieldID)
-	return []byte{startOfText, getFieldContents, 0x01, fieldID, lsb, msb, endOfTransmission}
+	return constructMessage([]byte{getFieldContents, 0x01, fieldID})
 }
 
 func buildField(input []byte) Field {

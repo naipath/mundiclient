@@ -2,10 +2,11 @@ package mundiclient
 
 const (
 	offsetField = 0x60
+	allFieldsID = 0x00
 )
 
 func (m MundiClient) OffsetAllFields(x int16, y int16) {
-	m.offsetField(0x00, x, y)
+	m.offsetField(allFieldsID, x, y)
 }
 
 func (m MundiClient) OffsetField(fieldId byte, x int16, y int16) {
@@ -13,11 +14,11 @@ func (m MundiClient) OffsetField(fieldId byte, x int16, y int16) {
 }
 
 func (m MundiClient) offsetField(fieldID byte, x int16, y int16) {
-	msbX, lsbX := byte(x>>8), byte(x&0xff)
-	msbY, lsbY := byte(y>>8), byte(y&0xff)
+	var length byte = 0x05
+	msbX, lsbX := byte(x>>8), byte(x&0xFF)
+	msbY, lsbY := byte(y>>8), byte(y&0xFF)
 
-	lsb, msb := calculateChecksum(offsetField, 0x05, fieldID, msbX, msbY, lsbX, lsbY)
-	message := []byte{startOfText, offsetField, 0x05, fieldID, msbX, lsbX, msbY, lsbY, lsb, msb, endOfTransmission}
+	message := constructMessage([]byte{offsetField, length, fieldID, msbX, lsbX, msbY, lsbY})
 
 	response := m.sendAndReceive(message)
 

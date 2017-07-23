@@ -24,11 +24,7 @@ type LineSettings struct {
 }
 
 func (m MundiClient) GetLineSettings() LineSettings {
-	lsb, msb := calculateChecksum(getLineSettings, emptyLength)
-	message := []byte{startOfText, getLineSettings, emptyLength, lsb, msb, endOfTransmission}
-
-	response := m.sendAndReceive(message)
-
+	response := m.sendAndReceive(constructMessage([]byte{getLineSettings, emptyLength}))
 	return LineSettings{
 		response[4],
 		detectorType(response[6]),
@@ -37,14 +33,11 @@ func (m MundiClient) GetLineSettings() LineSettings {
 }
 
 func (m MundiClient) SetLineSettingsDelay(delay uint16) {
-
 	var length byte = 0x03
 	var setLineSettingsDelayID byte = 0xC4
-	msbDelay, lsbDelay := byte(delay>>8), byte(delay&0xff)
+	msbDelay, lsbDelay := byte(delay>>8), byte(delay&0xFF)
 
-	lsb, msb := calculateChecksum(setLineSettings, length, setLineSettingsDelayID, lsbDelay, msbDelay)
-	message := []byte{startOfText, setLineSettings, length, setLineSettingsDelayID, lsbDelay, msbDelay, lsb, msb, endOfTransmission}
-
+	message := constructMessage([]byte{setLineSettings, length, setLineSettingsDelayID, lsbDelay, msbDelay})
 	response := m.sendAndReceive(message)
 
 	if response[0] != acknowledge {

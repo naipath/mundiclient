@@ -44,8 +44,7 @@ type StatusData struct {
 }
 
 func (m MundiClient) GetStatusData() StatusData {
-	lsb, msb := calculateChecksum(getStatusData, emptyLength)
-	response := m.sendAndReceive([]byte{startOfText, getStatusData, emptyLength, lsb, msb, endOfTransmission})
+	response := m.sendAndReceive(constructMessage([]byte{getStatusData, emptyLength}))
 
 	return StatusData{
 		binary.BigEndian.Uint16(response[3:5]), //Version
@@ -85,11 +84,7 @@ func (m MundiClient) GetStatusData() StatusData {
 }
 
 func (m MundiClient) GetStatusMessage() string {
-	lsb, msb := calculateChecksum(getStatusMessage, emptyLength)
-	response := m.sendAndReceive([]byte{startOfText, getStatusMessage, emptyLength, lsb, msb, endOfTransmission})
+	response := m.sendAndReceive(constructMessage([]byte{getStatusMessage, emptyLength}))
 	length := response[2]
-
-	statusMessage := string(response[3 : length+3])
-
-	return statusMessage
+	return string(response[3 : length+3])
 }
