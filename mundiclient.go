@@ -15,15 +15,20 @@ const (
 )
 
 type MundiClient struct {
-	conn net.Conn
+	conn  net.Conn
+	debug bool
 }
 
 func New(ip string, port int) *MundiClient {
-	return &MundiClient{createConnection(ip, port)}
+	return &MundiClient{createConnection(ip, port), false}
 }
 
-func (m MundiClient) Close() {
+func (m *MundiClient) Close() {
 	m.conn.Close()
+}
+
+func (m *MundiClient) SetDebug(debug bool) {
+	m.debug = debug
 }
 
 func (m MundiClient) sendAndReceiveMessage(message []byte) []byte {
@@ -31,7 +36,9 @@ func (m MundiClient) sendAndReceiveMessage(message []byte) []byte {
 }
 
 func (m MundiClient) sendAndReceive(bytes []byte) []byte {
-	fmt.Printf("Sending the following request:\n%08b\n", bytes)
+	if m.debug {
+		fmt.Printf("Sending the following request:\n%08b\n", bytes)
+	}
 	m.conn.Write(bytes)
 
 	reply := make([]byte, 1024)
@@ -40,7 +47,9 @@ func (m MundiClient) sendAndReceive(bytes []byte) []byte {
 
 	for i := len(reply) - 1; i >= 0; i-- {
 		if reply[i] != 0x00 {
-			fmt.Printf("Got the following response:\n%08b\n", reply[:i+1])
+			if m.debug {
+				fmt.Printf("Got the following response:\n%08b\n", reply[:i+1])
+			}
 			return reply[:i+1]
 		}
 	}
