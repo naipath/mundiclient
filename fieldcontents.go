@@ -28,22 +28,22 @@ type Field struct {
 }
 
 func (m MundiClient) GetAllFieldContents() []Field {
-	response := m.sendAndReceiveMessage(buildFieldContentsRequest(allFieldsNumber))
+	response := m.sendAndReceiveMessage(fieldRequest(allFieldsNumber))
 
 	fields := []Field{buildField(response)}
 	for i := 2; i <= int(response[3]); i++ {
-		response = m.sendAndReceive(buildFieldContentsRequest(byte(i)))
+		response = m.sendAndReceiveMessage(fieldRequest(byte(i)))
 		fields = append(fields, buildField(response))
 	}
 	return fields
 }
 
 func (m MundiClient) GetFieldContents(fieldID byte) Field {
-	response := m.sendAndReceiveMessage(buildFieldContentsRequest(fieldID))
+	response := m.sendAndReceiveMessage(fieldRequest(fieldID))
 	return buildField(response)
 }
 
-func buildFieldContentsRequest(fieldID byte) []byte {
+func fieldRequest(fieldID byte) []byte {
 	return []byte{getFieldContents, 0x01, fieldID}
 }
 

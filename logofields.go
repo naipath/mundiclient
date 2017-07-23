@@ -1,7 +1,6 @@
 package mundiclient
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -40,15 +39,9 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 	}
 
 	for i := 0; i < len(b)/500; i++ {
-
 		dataToSend := b[i*500 : i*500+500]
 
-		fmt.Println("Now at ", i*500)
-		fmt.Println("Total is ", fileSize)
-
-		logoDataMessage := append([]byte{uploadLogoData, 0x01, 0xF4}, dataToSend...)
-
-		response = m.sendAndReceiveMessage(logoDataMessage)
+		response = m.sendAndReceiveMessage(append([]byte{uploadLogoData, 0x01, 0xF4}, dataToSend...))
 
 		if response[0] != acknowledge {
 			panic("error sending part of logo: " + string(i))

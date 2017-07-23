@@ -58,7 +58,7 @@ func (m MundiClient) DownloadFile(markingfilename string) (string, []byte) {
 
 	totalBytes := []byte{}
 	for {
-		response = m.sendAndReceive([]byte{0x06})
+		response = m.sendAndReceive([]byte{acknowledge})
 
 		dataLength := binary.BigEndian.Uint16(response[2:4])
 		totalBytes = append(totalBytes, response[4:dataLength+4]...)

@@ -45,7 +45,6 @@ type StatusData struct {
 
 func (m MundiClient) GetStatusData() StatusData {
 	response := m.sendAndReceiveMessage([]byte{getStatusData, emptyLength})
-
 	return StatusData{
 		binary.BigEndian.Uint16(response[3:5]), //Version
 		response[5]&128 != 0,                   //PrintStatus
@@ -85,6 +84,6 @@ func (m MundiClient) GetStatusData() StatusData {
 
 func (m MundiClient) GetStatusMessage() string {
 	response := m.sendAndReceiveMessage([]byte{getStatusMessage, emptyLength})
-	length := response[2]
-	return string(response[3 : length+3])
+	statusMessageLength := response[2]
+	return string(response[3 : statusMessageLength+3])
 }

@@ -48,3 +48,7 @@ Not yet implemented:
 - Alter Logo Text Fields
 - Sending marking file
 - Get history files
+
+Additional requirements:
+- Instead of throwing a `panic` use proper error handling
+- Check response checksum

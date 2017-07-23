@@ -13,7 +13,6 @@ func (m MundiClient) GetSystemTime() time.Time {
 	systemDate := m.getSystemDate()
 
 	then, _ := time.Parse("02012006150405", string(systemDate[3:11])+string(systemTime[3:9]))
-
 	return then
 }
 

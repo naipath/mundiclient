@@ -50,7 +50,6 @@ func (m MundiClient) SetLaserParameterDuty(group byte, duty byte) {
 }
 
 func (m MundiClient) SetLaserParameterFrequency(group byte, frequency uint16) {
-
 	var frequencyID byte = 0xE1
 	var length byte = 0x06
 
