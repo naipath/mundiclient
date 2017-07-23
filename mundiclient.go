@@ -7,10 +7,11 @@ import (
 )
 
 const (
-	startOfText       = 0x02
-	endOfTransmission = 0x04
-	emptyLength       = 0x00
-	acknowledge       = 0x06
+	startOfText         = 0x02
+	endOfTransmission   = 0x04
+	emptyLength         = 0x00
+	acknowledge         = 0x06
+	negativeAcknowledge = 0x15
 )
 
 type MundiClient struct {

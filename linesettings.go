@@ -41,7 +41,7 @@ func (m MundiClient) SetLineSettingsDelay(delay uint16) {
 	response := m.sendAndReceiveMessage(message)
 
 	if response[0] != acknowledge {
-		if response[0] == 0x15 {
+		if response[0] == negativeAcknowledge {
 			switch response[1] {
 			case 0xC0:
 				panic("Product present not available with static marking")

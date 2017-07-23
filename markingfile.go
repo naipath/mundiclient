@@ -31,7 +31,7 @@ func (m MundiClient) GetMarkingFiles() []string {
 
 	var markingFiles []string
 	for {
-		if response[0] == 0x15 {
+		if response[0] == negativeAcknowledge {
 			panic("error occured GetMarkingFiles")
 		}
 		if response[0] == 0x17 {
