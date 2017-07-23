@@ -63,3 +63,12 @@ func calculateChecksum(input ...byte) (byte, byte) {
 	msb := byte((total >> 8) & 0xFF)
 	return lsb, msb
 }
+
+func convertUInt32ToBytes(input uint32) []byte {
+	return []byte{byte(input >> 24), byte(input >> 16), byte(input >> 8), byte(input & 0xff)}
+}
+
+func constructMessage(input []byte) []byte {
+	lsb, msb := calculateChecksum(input...)
+	return append(append([]byte{startOfText}, input...), lsb, msb, endOfTransmission)
+}

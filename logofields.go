@@ -18,7 +18,7 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 	filestatistics, _ := logo.Stat()
 
 	fileSize := uint32(filestatistics.Size())
-	fileSizeLength := []byte{byte(fileSize >> 24), byte(fileSize >> 16), byte(fileSize >> 8), byte(fileSize & 0xff)}
+	fileSizeLength := convertUInt32ToBytes(fileSize)
 
 	fileName := filepath.Base(logo.Name())
 	fileNameLength := []byte{byte(len(fileName) >> 8), byte(len(fileName) & 0xff)}
@@ -75,7 +75,7 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 	for _, element := range b {
 		totalLogo += uint32(element)
 	}
-	logoChecksum := []byte{byte(totalLogo >> 24), byte(totalLogo >> 16), byte(totalLogo >> 8), byte(totalLogo & 0xff)}
+	logoChecksum := convertUInt32ToBytes(totalLogo)
 
 	lastData := b[len(b)/500*500 : len(b)/500*500+len(b)%500]
 	lastDataLength := uint16(len(lastData))

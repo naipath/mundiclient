@@ -18,13 +18,9 @@ func (m MundiClient) GetSystemTime() time.Time {
 }
 
 func (m MundiClient) getSystemTime() []byte {
-	lsb, msb := calculateChecksum(getSystemTime, emptyLength)
-	message := []byte{startOfText, getSystemTime, emptyLength, lsb, msb, endOfTransmission}
-	return m.sendAndReceive(message)
+	return m.sendAndReceive(constructMessage([]byte{getSystemTime, emptyLength}))
 }
 
 func (m MundiClient) getSystemDate() []byte {
-	lsb, msb := calculateChecksum(getSystemDate, emptyLength)
-	message := []byte{startOfText, getSystemDate, emptyLength, lsb, msb, endOfTransmission}
-	return m.sendAndReceive(message)
+	return m.sendAndReceive(constructMessage([]byte{getSystemDate, emptyLength}))
 }
