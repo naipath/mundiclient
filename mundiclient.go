@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	startOfText         = 0x02
-	endOfTransmission   = 0x04
-	emptyLength         = 0x00
-	acknowledge         = 0x06
+	startOfText = 0x02
+	endOfTransmission = 0x04
+	emptyLength = 0x00
+	acknowledge = 0x06
 	negativeAcknowledge = 0x15
 )
 
@@ -19,12 +19,16 @@ type MundiClient struct {
 	debug bool
 }
 
-func New(ip string, port int) *MundiClient {
-	return &MundiClient{createConnection(ip, port), false}
+func New(ip string, port int) (*MundiClient, error) {
+	conn, err := createConnection(ip, port)
+	if err != nil {
+		return nil, err
+	}
+	return &MundiClient{conn, false}, nil
 }
 
-func (m *MundiClient) Close() {
-	m.conn.Close()
+func (m *MundiClient) Close() error {
+	return m.conn.Close()
 }
 
 func (m *MundiClient) SetDebug(debug bool) {
@@ -48,24 +52,24 @@ func (m MundiClient) sendAndReceive(bytes []byte) []byte {
 	for i := len(reply) - 1; i >= 0; i-- {
 		if reply[i] != 0x00 {
 			if m.debug {
-				fmt.Printf("Got the following response:\n%08b\n", reply[:i+1])
+				fmt.Printf("Got the following response:\n%08b\n", reply[:i + 1])
 			}
-			return reply[:i+1]
+			return reply[:i + 1]
 		}
 	}
 	panic("Got no response!")
 }
 
-func createConnection(ip string, port int) net.Conn {
-	var lastError error
+func createConnection(ip string, port int) (net.Conn, error) {
+	var lastErr error
 	for i := 0; i < 10; i++ {
-		conn, err := net.Dial("tcp", ip+":"+strconv.Itoa(port))
+		conn, err := net.Dial("tcp", ip + ":" + strconv.Itoa(port))
 		if err == nil {
-			return conn
+			return conn, nil
 		}
-		lastError = err
+		lastErr = err
 	}
-	panic(lastError)
+	return nil, lastErr
 }
 
 func calculateChecksum(input ...byte) (byte, byte) {
