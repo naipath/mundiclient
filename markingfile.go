@@ -1,6 +1,9 @@
 package mundiclient
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"errors"
+)
 
 const (
 	selectMarkingFile     = 0x98
@@ -9,47 +12,59 @@ const (
 	downloadFile          = 0xD3
 )
 
-func (m MundiClient) SelectMarkingFile(filename string) {
+func (m MundiClient) SelectMarkingFile(filename string) error {
 	data := []byte(filename)
 	length := byte(len(data))
 
 	message := append([]byte{selectMarkingFile, length}, data...)
-	response := m.sendAndReceiveMessage(message)
+	response, err := m.sendAndReceiveMessage(message)
 
-	if response[0] != acknowledge {
-		panic("could not select marking file")
+	if err != nil || response[0] != acknowledge {
+		return errors.New("could not select marking file")
 	}
+	return nil
 }
 
-func (m MundiClient) GetCurrentMarkingFile() string {
-	response := m.sendAndReceiveMessage([]byte{getCurrentMarkingFile, emptyLength})
-	return string(response[3 : response[2]+3])
+func (m MundiClient) GetCurrentMarkingFile() (string, error) {
+	response, err := m.sendAndReceiveMessage([]byte{getCurrentMarkingFile, emptyLength})
+	if err != nil {
+		return "", err
+	}
+	return string(response[3 : response[2]+3]), nil
 }
 
-func (m MundiClient) GetMarkingFiles() []string {
-	response := m.sendAndReceiveMessage([]byte{getMarkingFiles, emptyLength})
+func (m MundiClient) GetMarkingFiles() ([]string, error) {
+	response, err := m.sendAndReceiveMessage([]byte{getMarkingFiles, emptyLength})
+
+	if err != nil {
+		return nil, err
+	}
 
 	var markingFiles []string
 	for {
 		if response[0] == negativeAcknowledge {
-			panic("error occured GetMarkingFiles")
+			return nil, errors.New("error occured GetMarkingFiles")
 		}
 		if response[0] == 0x17 {
-			return markingFiles
+			return markingFiles, nil
 		}
 		markingFiles = append(markingFiles, string(response[5:response[4]+5]))
-		response = m.sendAndReceive([]byte{0x21})
+		response, err = m.sendAndReceive([]byte{0x21})
+
+		if err != nil {
+			return nil, err
+		}
 	}
 }
 
-func (m MundiClient) DownloadFile(markingfilename string) (string, []byte) {
+func (m MundiClient) DownloadFile(markingfilename string) (string, []byte, error) {
 	length := byte(len(markingfilename))
 	data := []byte(markingfilename)
 
-	response := m.sendAndReceiveMessage(append([]byte{downloadFile, length}, data...))
+	response, err := m.sendAndReceiveMessage(append([]byte{downloadFile, length}, data...))
 
-	if response[0] != acknowledge {
-		panic("Did not get acknowledge for download")
+	if err != nil || response[0] != acknowledge {
+		return "", nil, errors.New("Did not get acknowledge for download")
 	}
 
 	fileSize := binary.BigEndian.Uint32(response[3:8])
@@ -58,7 +73,11 @@ func (m MundiClient) DownloadFile(markingfilename string) (string, []byte) {
 
 	totalBytes := []byte{}
 	for {
-		response = m.sendAndReceive([]byte{acknowledge})
+		response, err = m.sendAndReceive([]byte{acknowledge})
+
+		if err != nil {
+			return "", nil, err
+		}
 
 		dataLength := binary.BigEndian.Uint16(response[2:4])
 		totalBytes = append(totalBytes, response[4:dataLength+4]...)
@@ -67,9 +86,8 @@ func (m MundiClient) DownloadFile(markingfilename string) (string, []byte) {
 			break
 		}
 	}
-
 	if len(totalBytes) != int(fileSize) {
-		panic("Did not receive correct amount of bytes")
+		return "", nil, errors.New("Did not receive correct amount of bytes")
 	}
-	return fileName, totalBytes
+	return fileName, totalBytes, nil
 }

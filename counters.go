@@ -1,6 +1,9 @@
 package mundiclient
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"errors"
+)
 
 const (
 	getCounters                = 0x47
@@ -14,21 +17,25 @@ type Counters struct {
 	Recent   uint32
 }
 
-func (m MundiClient) GetCounters() Counters {
-	response := m.sendAndReceiveMessage([]byte{getCounters, emptyLength})
+func (m MundiClient) GetCounters() (Counters, error) {
+	response, err := m.sendAndReceiveMessage([]byte{getCounters, emptyLength})
+	if err != nil {
+		return Counters{}, err
+	}
 
 	lifetime := binary.BigEndian.Uint32(response[3:7])
 	recent := binary.BigEndian.Uint32(response[7:11])
 
-	return Counters{lifetime, recent}
+	return Counters{lifetime, recent}, nil
 }
 
-func (m MundiClient) ResetCurrentCount() {
-	response := m.sendAndReceiveMessage([]byte{resetCurrentCount, emptyLength})
+func (m MundiClient) ResetCurrentCount() error {
+	response, err := m.sendAndReceiveMessage([]byte{resetCurrentCount, emptyLength})
 
-	if response[0] != acknowledge {
-		panic("Reset not acknowledged")
+	if err != nil || response[0] != acknowledge {
+		return errors.New("reset current count failed")
 	}
+	return nil
 }
 
 type IncrementalCounterValue struct {
@@ -36,25 +43,30 @@ type IncrementalCounterValue struct {
 	Data    string
 }
 
-func (m MundiClient) GetIncrementalCounterValue(fieldId byte) IncrementalCounterValue {
+func (m MundiClient) GetIncrementalCounterValue(fieldId byte) (IncrementalCounterValue, error) {
 	var length byte = 0x01
-	response := m.sendAndReceiveMessage([]byte{getIncrementalCounterValue, length, fieldId})
+	response, err := m.sendAndReceiveMessage([]byte{getIncrementalCounterValue, length, fieldId})
+
+	if err != nil {
+		return IncrementalCounterValue{}, err
+	}
 
 	return IncrementalCounterValue{
 		response[3],
 		string(response[5 : response[4]*2+5]),
-	}
+	}, nil
 }
 
-func (m MundiClient) SetIncrementalCounterValue(input IncrementalCounterValue) {
+func (m MundiClient) SetIncrementalCounterValue(input IncrementalCounterValue) error {
 	length := byte(len(input.Data)) + 0x2 // Double check for utf-8 to ansi conversion
 
 	startOfMessage := []byte{setIncrementalCounterValue, length, input.FieldID, byte(len(input.Data))}
 	message := append(startOfMessage, []byte(input.Data)...)
 
-	response := m.sendAndReceiveMessage(message)
+	response, err := m.sendAndReceiveMessage(message)
 
-	if response[0] != acknowledge {
-		panic("Could not set incremental counter")
+	if err != nil || response[0] != acknowledge {
+		return errors.New("Could not set incremental counter")
 	}
+	return nil
 }

@@ -43,8 +43,11 @@ type StatusData struct {
 	GalvoCableDisconnected             bool
 }
 
-func (m MundiClient) GetStatusData() StatusData {
-	response := m.sendAndReceiveMessage([]byte{getStatusData, emptyLength})
+func (m MundiClient) GetStatusData() (StatusData, error) {
+	response, err := m.sendAndReceiveMessage([]byte{getStatusData, emptyLength})
+	if err != nil {
+		return StatusData{}, err
+	}
 	return StatusData{
 		binary.BigEndian.Uint16(response[3:5]), //Version
 		response[5]&128 != 0,                   //PrintStatus
@@ -79,11 +82,14 @@ func (m MundiClient) GetStatusData() StatusData {
 		response[9]&32 != 0,                    //GalvoPower
 		response[9]&16 != 0,                    //GalvoTemperature
 		response[9]&8 != 0,                     //GalvoCableDisconnected
-	}
+	}, nil
 }
 
-func (m MundiClient) GetStatusMessage() string {
-	response := m.sendAndReceiveMessage([]byte{getStatusMessage, emptyLength})
+func (m MundiClient) GetStatusMessage() (string, error) {
+	response, err := m.sendAndReceiveMessage([]byte{getStatusMessage, emptyLength})
+	if err != nil {
+		return "", err
+	}
 	statusMessageLength := response[2]
-	return string(response[3 : statusMessageLength+3])
+	return string(response[3 : statusMessageLength+3]), nil
 }

@@ -1,6 +1,7 @@
 package mundiclient
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -12,7 +13,7 @@ const (
 	lastUploadLogoData = 0x46
 )
 
-func (m MundiClient) UploadLogo(logo *os.File) {
+func (m MundiClient) UploadLogo(logo *os.File) error {
 
 	filestatistics, _ := logo.Stat()
 
@@ -27,10 +28,10 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 	message = append(message, fileNameLength...)
 	message = append(message, []byte(fileName)...)
 
-	response := m.sendAndReceiveMessage(message)
+	response, err := m.sendAndReceiveMessage(message)
 
-	if response[0] != acknowledge {
-		panic("error sending logo")
+	if err != nil || response[0] != acknowledge {
+		return errors.New("error sending logo")
 	}
 
 	b, err := ioutil.ReadAll(logo)
@@ -41,10 +42,10 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 	for i := 0; i < len(b)/500; i++ {
 		dataToSend := b[i*500 : i*500+500]
 
-		response = m.sendAndReceiveMessage(append([]byte{uploadLogoData, 0x01, 0xF4}, dataToSend...))
+		response, err = m.sendAndReceiveMessage(append([]byte{uploadLogoData, 0x01, 0xF4}, dataToSend...))
 
-		if response[0] != acknowledge {
-			panic("error sending part of logo: " + string(i))
+		if err != nil || response[0] != acknowledge {
+			return errors.New("error sending part of logo: " + string(i))
 		}
 	}
 
@@ -62,8 +63,9 @@ func (m MundiClient) UploadLogo(logo *os.File) {
 	lastLogoBlockMessage = append(lastLogoBlockMessage, lastData...)
 	lastLogoBlockMessage = append(lastLogoBlockMessage, logoChecksum...)
 
-	response = m.sendAndReceiveMessage(lastLogoBlockMessage)
-	if response[0] != acknowledge {
-		panic("could not save logo")
+	response, err = m.sendAndReceiveMessage(lastLogoBlockMessage)
+	if err != nil || response[0] != acknowledge {
+		return errors.New("could not save logo")
 	}
+	return nil
 }

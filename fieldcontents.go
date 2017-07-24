@@ -27,20 +27,31 @@ type Field struct {
 	FieldText   string
 }
 
-func (m MundiClient) GetAllFieldContents() []Field {
-	response := m.sendAndReceiveMessage(fieldRequest(allFieldsNumber))
+func (m MundiClient) GetAllFieldContents() ([]Field, error) {
+	response, err := m.sendAndReceiveMessage(fieldRequest(allFieldsNumber))
+
+	if err != nil {
+		return nil, err
+	}
 
 	fields := []Field{buildField(response)}
 	for i := 2; i <= int(response[3]); i++ {
-		response = m.sendAndReceiveMessage(fieldRequest(byte(i)))
+		response, err = m.sendAndReceiveMessage(fieldRequest(byte(i)))
+		if err != nil {
+			return nil, err
+		}
+
 		fields = append(fields, buildField(response))
 	}
-	return fields
+	return fields, nil
 }
 
-func (m MundiClient) GetFieldContents(fieldID byte) Field {
-	response := m.sendAndReceiveMessage(fieldRequest(fieldID))
-	return buildField(response)
+func (m MundiClient) GetFieldContents(fieldID byte) (Field, error) {
+	response, err := m.sendAndReceiveMessage(fieldRequest(fieldID))
+	if err != nil {
+		return Field{}, err
+	}
+	return buildField(response), nil
 }
 
 func fieldRequest(fieldID byte) []byte {

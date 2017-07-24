@@ -1,16 +1,17 @@
 package mundiclient
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"strconv"
 )
 
 const (
-	startOfText = 0x02
-	endOfTransmission = 0x04
-	emptyLength = 0x00
-	acknowledge = 0x06
+	startOfText         = 0x02
+	endOfTransmission   = 0x04
+	emptyLength         = 0x00
+	acknowledge         = 0x06
 	negativeAcknowledge = 0x15
 )
 
@@ -35,35 +36,34 @@ func (m *MundiClient) SetDebug(debug bool) {
 	m.debug = debug
 }
 
-func (m MundiClient) sendAndReceiveMessage(message []byte) []byte {
+func (m MundiClient) sendAndReceiveMessage(message []byte) ([]byte, error) {
 	return m.sendAndReceive(constructMessage(message))
 }
 
-func (m MundiClient) sendAndReceive(bytes []byte) []byte {
+func (m MundiClient) sendAndReceive(bytes []byte) ([]byte, error) {
 	if m.debug {
 		fmt.Printf("Sending the following request:\n%08b\n", bytes)
 	}
 	m.conn.Write(bytes)
 
 	reply := make([]byte, 1024)
-
 	m.conn.Read(reply)
 
 	for i := len(reply) - 1; i >= 0; i-- {
 		if reply[i] != 0x00 {
 			if m.debug {
-				fmt.Printf("Got the following response:\n%08b\n", reply[:i + 1])
+				fmt.Printf("Got the following response:\n%08b\n", reply[:i+1])
 			}
-			return reply[:i + 1]
+			return reply[:i+1], nil
 		}
 	}
-	panic("Got no response!")
+	return nil, errors.New("sendAndReceive: Did not receive response")
 }
 
 func createConnection(ip string, port int) (net.Conn, error) {
 	var lastErr error
 	for i := 0; i < 10; i++ {
-		conn, err := net.Dial("tcp", ip + ":" + strconv.Itoa(port))
+		conn, err := net.Dial("tcp", ip+":"+strconv.Itoa(port))
 		if err == nil {
 			return conn, nil
 		}

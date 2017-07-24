@@ -51,4 +51,3 @@ Not yet implemented:
 
 Additional requirements:
 - Instead of throwing a `panic` use proper error handling
-- Check response checksum
