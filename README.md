@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-  client := mundiclient.New("192.168.1.171", 1470)
+  client, _ := mundiclient.New("192.168.1.171", 1470)
   defer client.Close()
   
   fmt.Println(client.GetVersion())
@@ -48,6 +48,3 @@ Not yet implemented:
 - Alter Logo Text Fields
 - Sending marking file
 - Get history files
-
-Additional requirements:
-- Instead of throwing a `panic` use proper error handling
