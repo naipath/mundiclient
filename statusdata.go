@@ -1,6 +1,12 @@
 package mundiclient
 
-import "encoding/binary"
+import (
+	"bytes"
+	"encoding/binary"
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
+	"io/ioutil"
+)
 
 const (
 	getStatusData    = 0x57
@@ -91,5 +97,12 @@ func (m MundiClient) GetStatusMessage() (string, error) {
 		return "", err
 	}
 	statusMessageLength := response[2]
-	return string(response[3 : statusMessageLength+3]), nil
+	return unicodeBytesToUtf8String(response[3 : statusMessageLength+3]), nil
+}
+
+func unicodeBytesToUtf8String(input []byte) string {
+	decoder := unicode.UTF16(false, unicode.IgnoreBOM).NewDecoder()
+	rInUTF8 := transform.NewReader(bytes.NewReader(input), decoder)
+	decBytes, _ := ioutil.ReadAll(rInUTF8)
+	return string(decBytes)
 }
