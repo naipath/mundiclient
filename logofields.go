@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"fmt"
 )
 
 const (
@@ -36,8 +37,9 @@ func (m MundiClient) UploadLogo(logo *os.File) error {
 
 	b, err := ioutil.ReadAll(logo)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
 
 	for i := 0; i < len(b)/500; i++ {
 		dataToSend := b[i*500 : i*500+500]
@@ -47,8 +49,9 @@ func (m MundiClient) UploadLogo(logo *os.File) error {
 		if err != nil || response[0] != acknowledge {
 			return errors.New("error sending part of logo: " + string(i))
 		}
+		fmt.Println("Current iterations", i)
+		fmt.Println("Total iterations", len(b)/500)
 	}
-
 	var totalLogo uint32
 	for _, element := range b {
 		totalLogo += uint32(element)
