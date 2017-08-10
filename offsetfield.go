@@ -7,15 +7,15 @@ const (
 	allFieldsID = 0x00
 )
 
-func (m MundiClient) OffsetAllFields(x int16, y int16) error {
+func (m *MundiClient) OffsetAllFields(x int16, y int16) error {
 	return m.offsetField(allFieldsID, x, y)
 }
 
-func (m MundiClient) OffsetField(fieldId byte, x int16, y int16) error {
+func (m *MundiClient) OffsetField(fieldId byte, x int16, y int16) error {
 	return m.offsetField(fieldId, x, y)
 }
 
-func (m MundiClient) offsetField(fieldID byte, x int16, y int16) error {
+func (m *MundiClient) offsetField(fieldID byte, x int16, y int16) error {
 	var length byte = 0x05
 	msbX, lsbX := byte(x>>8), byte(x&0xFF)
 	msbY, lsbY := byte(y>>8), byte(y&0xFF)

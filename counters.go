@@ -17,7 +17,7 @@ type Counters struct {
 	Recent   uint32
 }
 
-func (m MundiClient) GetCounters() (Counters, error) {
+func (m *MundiClient) GetCounters() (Counters, error) {
 	response, err := m.sendAndReceiveMessage([]byte{getCounters, emptyLength})
 	if err != nil {
 		return Counters{}, err
@@ -29,7 +29,7 @@ func (m MundiClient) GetCounters() (Counters, error) {
 	return Counters{lifetime, recent}, nil
 }
 
-func (m MundiClient) ResetCurrentCount() error {
+func (m *MundiClient) ResetCurrentCount() error {
 	response, err := m.sendAndReceiveMessage([]byte{resetCurrentCount, emptyLength})
 
 	if err != nil || response[0] != acknowledge {
@@ -43,7 +43,7 @@ type IncrementalCounterValue struct {
 	Data    string
 }
 
-func (m MundiClient) GetIncrementalCounterValue(fieldId byte) (IncrementalCounterValue, error) {
+func (m *MundiClient) GetIncrementalCounterValue(fieldId byte) (IncrementalCounterValue, error) {
 	var length byte = 0x01
 	response, err := m.sendAndReceiveMessage([]byte{getIncrementalCounterValue, length, fieldId})
 
@@ -53,11 +53,11 @@ func (m MundiClient) GetIncrementalCounterValue(fieldId byte) (IncrementalCounte
 
 	return IncrementalCounterValue{
 		response[3],
-		string(response[5 : response[4]*2+5]),
+		string(response[5: response[4]*2+5]),
 	}, nil
 }
 
-func (m MundiClient) SetIncrementalCounterValue(input IncrementalCounterValue) error {
+func (m *MundiClient) SetIncrementalCounterValue(input IncrementalCounterValue) error {
 	length := byte(len(input.Data)) + 0x2 // Double check for utf-8 to ansi conversion
 
 	startOfMessage := []byte{setIncrementalCounterValue, length, input.FieldID, byte(len(input.Data))}

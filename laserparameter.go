@@ -24,7 +24,7 @@ type LaserParameter struct {
 	PolygonDelay uint16 // PolygonDelay: 0-32000 μSeconds
 }
 
-func (m MundiClient) GetLaserParameter(group byte) (LaserParameter, error) {
+func (m *MundiClient) GetLaserParameter(group byte) (LaserParameter, error) {
 	response, err := m.sendAndReceiveMessage([]byte{getLaserParameter, 0x01, group})
 
 	if err != nil {
@@ -44,7 +44,7 @@ func (m MundiClient) GetLaserParameter(group byte) (LaserParameter, error) {
 	}, nil
 }
 
-func (m MundiClient) SetLaserParameterDuty(group byte, duty byte) error {
+func (m *MundiClient) SetLaserParameterDuty(group byte, duty byte) error {
 	var dutyID byte = 0xE2
 	var length byte = 0x06
 
@@ -57,7 +57,7 @@ func (m MundiClient) SetLaserParameterDuty(group byte, duty byte) error {
 	return nil
 }
 
-func (m MundiClient) SetLaserParameterFrequency(group byte, frequency uint16) error {
+func (m *MundiClient) SetLaserParameterFrequency(group byte, frequency uint16) error {
 	var frequencyID byte = 0xE1
 	var length byte = 0x06
 

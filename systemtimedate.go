@@ -7,7 +7,7 @@ const (
 	getSystemDate = 0xAB
 )
 
-func (m MundiClient) GetSystemTime() (time.Time, error) {
+func (m *MundiClient) GetSystemTime() (time.Time, error) {
 	systemTime, errTime := m.getSystemTime()
 	if errTime != nil {
 		return time.Time{}, errTime
@@ -21,10 +21,10 @@ func (m MundiClient) GetSystemTime() (time.Time, error) {
 	return then, nil
 }
 
-func (m MundiClient) getSystemTime() ([]byte, error) {
+func (m *MundiClient) getSystemTime() ([]byte, error) {
 	return m.sendAndReceiveMessage([]byte{getSystemTime, emptyLength})
 }
 
-func (m MundiClient) getSystemDate() ([]byte, error) {
+func (m *MundiClient) getSystemDate() ([]byte, error) {
 	return m.sendAndReceiveMessage([]byte{getSystemDate, emptyLength})
 }

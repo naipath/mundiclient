@@ -27,7 +27,7 @@ type Field struct {
 	FieldText   string
 }
 
-func (m MundiClient) GetAllFieldContents() ([]Field, error) {
+func (m *MundiClient) GetAllFieldContents() ([]Field, error) {
 	response, err := m.sendAndReceiveMessage(fieldRequest(allFieldsNumber))
 
 	if err != nil {
@@ -46,7 +46,7 @@ func (m MundiClient) GetAllFieldContents() ([]Field, error) {
 	return fields, nil
 }
 
-func (m MundiClient) GetFieldContents(fieldID byte) (Field, error) {
+func (m *MundiClient) GetFieldContents(fieldID byte) (Field, error) {
 	response, err := m.sendAndReceiveMessage(fieldRequest(fieldID))
 	if err != nil {
 		return Field{}, err
@@ -62,6 +62,6 @@ func buildField(input []byte) Field {
 	return Field{
 		input[4],
 		FieldType(input[5]),
-		string(input[6 : input[2]-3+6]),
+		string(input[6: input[2]-3+6]),
 	}
 }

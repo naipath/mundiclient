@@ -30,7 +30,7 @@ type LineSettings struct {
 	Delay     uint16
 }
 
-func (m MundiClient) GetLineSettings() (LineSettings, error) {
+func (m *MundiClient) GetLineSettings() (LineSettings, error) {
 	response, err := m.sendAndReceiveMessage([]byte{getLineSettings, emptyLength})
 	if err != nil {
 		return LineSettings{}, err
@@ -42,7 +42,7 @@ func (m MundiClient) GetLineSettings() (LineSettings, error) {
 	}, nil
 }
 
-func (m MundiClient) SetLineSettingsDelay(delay uint16) error {
+func (m *MundiClient) SetLineSettingsDelay(delay uint16) error {
 	var length byte = 0x03
 	var setLineSettingsDelayID byte = 0xC4
 	msbDelay, lsbDelay := byte(delay>>8), byte(delay&0xFF)

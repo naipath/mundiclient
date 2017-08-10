@@ -14,7 +14,7 @@ const (
 	lastUploadLogoData = 0x46
 )
 
-func (m MundiClient) UploadLogo(logo *os.File) error {
+func (m *MundiClient) UploadLogo(logo *os.File) error {
 
 	filestatistics, _ := logo.Stat()
 
@@ -40,9 +40,8 @@ func (m MundiClient) UploadLogo(logo *os.File) error {
 		return err
 	}
 
-
 	for i := 0; i < len(b)/500; i++ {
-		dataToSend := b[i*500 : i*500+500]
+		dataToSend := b[i*500: i*500+500]
 
 		response, err = m.sendAndReceiveMessage(append([]byte{uploadLogoData, 0x01, 0xF4}, dataToSend...))
 
@@ -58,7 +57,7 @@ func (m MundiClient) UploadLogo(logo *os.File) error {
 	}
 	logoChecksum := convertUInt32ToBytes(totalLogo)
 
-	lastData := b[len(b)/500*500 : len(b)/500*500+len(b)%500]
+	lastData := b[len(b)/500*500: len(b)/500*500+len(b)%500]
 	lastDataLength := uint16(len(lastData))
 	msbLastMessage, lsbLastMessage := byte(lastDataLength>>8), byte(lastDataLength&0xff)
 

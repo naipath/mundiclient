@@ -49,7 +49,7 @@ type StatusData struct {
 	GalvoCableDisconnected             bool
 }
 
-func (m MundiClient) GetStatusData() (StatusData, error) {
+func (m *MundiClient) GetStatusData() (StatusData, error) {
 	response, err := m.sendAndReceiveMessage([]byte{getStatusData, emptyLength})
 	if err != nil {
 		return StatusData{}, err
@@ -91,13 +91,13 @@ func (m MundiClient) GetStatusData() (StatusData, error) {
 	}, nil
 }
 
-func (m MundiClient) GetStatusMessage() (string, error) {
+func (m *MundiClient) GetStatusMessage() (string, error) {
 	response, err := m.sendAndReceiveMessage([]byte{getStatusMessage, emptyLength})
 	if err != nil {
 		return "", err
 	}
 	statusMessageLength := response[2]
-	return unicodeBytesToUtf8String(response[3 : statusMessageLength+3]), nil
+	return unicodeBytesToUtf8String(response[3: statusMessageLength+3]), nil
 }
 
 func unicodeBytesToUtf8String(input []byte) string {

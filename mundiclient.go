@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"sync"
 )
 
 const (
@@ -18,6 +19,7 @@ const (
 type MundiClient struct {
 	conn  net.Conn
 	debug bool
+	lock  sync.Mutex
 }
 
 func New(ip string, port int) (*MundiClient, error) {
@@ -25,7 +27,7 @@ func New(ip string, port int) (*MundiClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &MundiClient{conn, false}, nil
+	return &MundiClient{conn, false, sync.Mutex{}}, nil
 }
 
 func (m *MundiClient) Close() error {
@@ -36,11 +38,13 @@ func (m *MundiClient) SetDebug(debug bool) {
 	m.debug = debug
 }
 
-func (m MundiClient) sendAndReceiveMessage(message []byte) ([]byte, error) {
+func (m *MundiClient) sendAndReceiveMessage(message []byte) ([]byte, error) {
 	return m.sendAndReceive(constructMessage(message))
 }
 
-func (m MundiClient) sendAndReceive(bytes []byte) ([]byte, error) {
+func (m *MundiClient) sendAndReceive(bytes []byte) ([]byte, error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
 	if m.debug {
 		fmt.Printf("Sending the following request:\n%08b\n", bytes)
 	}

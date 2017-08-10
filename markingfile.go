@@ -12,7 +12,7 @@ const (
 	downloadFile          = 0xD3
 )
 
-func (m MundiClient) SelectMarkingFile(filename string) error {
+func (m *MundiClient) SelectMarkingFile(filename string) error {
 	data := []byte(filename)
 	length := byte(len(data))
 
@@ -25,15 +25,15 @@ func (m MundiClient) SelectMarkingFile(filename string) error {
 	return nil
 }
 
-func (m MundiClient) GetCurrentMarkingFile() (string, error) {
+func (m *MundiClient) GetCurrentMarkingFile() (string, error) {
 	response, err := m.sendAndReceiveMessage([]byte{getCurrentMarkingFile, emptyLength})
 	if err != nil {
 		return "", err
 	}
-	return string(response[3 : response[2]+3]), nil
+	return string(response[3: response[2]+3]), nil
 }
 
-func (m MundiClient) GetMarkingFiles() ([]string, error) {
+func (m *MundiClient) GetMarkingFiles() ([]string, error) {
 	response, err := m.sendAndReceiveMessage([]byte{getMarkingFiles, emptyLength})
 
 	if err != nil {
@@ -57,7 +57,7 @@ func (m MundiClient) GetMarkingFiles() ([]string, error) {
 	}
 }
 
-func (m MundiClient) DownloadFile(markingfilename string) (string, []byte, error) {
+func (m *MundiClient) DownloadFile(markingfilename string) (string, []byte, error) {
 	length := byte(len(markingfilename))
 	data := []byte(markingfilename)
 
@@ -69,7 +69,7 @@ func (m MundiClient) DownloadFile(markingfilename string) (string, []byte, error
 
 	fileSize := binary.BigEndian.Uint32(response[3:8])
 	fileNameLength := binary.BigEndian.Uint16(response[7:9])
-	fileName := string(response[9 : 9+fileNameLength])
+	fileName := string(response[9: 9+fileNameLength])
 
 	totalBytes := []byte{}
 	for {
