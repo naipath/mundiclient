@@ -9,9 +9,12 @@ import (
 )
 
 const (
-	uploadLogo         = 0x50
-	uploadLogoData     = 0x42
-	lastUploadLogoData = 0x46
+	uploadLogo                 = 0x50
+	uploadLogoData             = 0x42
+	lastUploadLogoData         = 0x46
+	requestOverWritePermission = 0x21
+	notSaved                   = 0x0D
+	failedToCreateLogoFile     = 0x0F
 )
 
 func (m *MundiClient) UploadLogo(logo *os.File) error {
@@ -66,8 +69,18 @@ func (m *MundiClient) UploadLogo(logo *os.File) error {
 	lastLogoBlockMessage = append(lastLogoBlockMessage, logoChecksum...)
 
 	response, err = m.sendAndReceiveMessage(lastLogoBlockMessage)
+
+	if response[0] == requestOverWritePermission {
+		response, err = m.sendAndReceive([]byte{requestOverWritePermission})
+	}
+	if response[0] == notSaved {
+		return errors.New("Failed to save logo file")
+	}
+	if response[0] == failedToCreateLogoFile {
+		return errors.New("Failed to create logo file")
+	}
 	if err != nil || response[0] != acknowledge {
-		return errors.New("could not save logo")
+		return errors.New("Could not save logo")
 	}
 	return nil
 }
