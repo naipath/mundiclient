@@ -6,6 +6,7 @@ import (
 	"net"
 	"strconv"
 	"sync"
+	"time"
 )
 
 const (
@@ -17,9 +18,10 @@ const (
 )
 
 type MundiClient struct {
-	conn  net.Conn
-	debug bool
-	lock  sync.Mutex
+	conn        net.Conn
+	debug       bool
+	lock        sync.Mutex
+	readTimeout time.Duration
 }
 
 func New(ip string, port int) (*MundiClient, error) {
@@ -27,7 +29,7 @@ func New(ip string, port int) (*MundiClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &MundiClient{conn, false, sync.Mutex{}}, nil
+	return &MundiClient{conn, false, sync.Mutex{}, 10 * time.Second}, nil
 }
 
 func (m *MundiClient) Close() error {
@@ -36,6 +38,10 @@ func (m *MundiClient) Close() error {
 
 func (m *MundiClient) SetDebug(debug bool) {
 	m.debug = debug
+}
+
+func (m *MundiClient) SetReadTimeout(readTimeout time.Duration) {
+	m.readTimeout = readTimeout
 }
 
 func (m *MundiClient) sendAndReceiveMessage(message []byte) ([]byte, error) {
@@ -49,6 +55,8 @@ func (m *MundiClient) sendAndReceive(bytes []byte) ([]byte, error) {
 		fmt.Printf("Sending the following request:\n%08b\n", bytes)
 	}
 	m.conn.Write(bytes)
+
+	m.conn.SetReadDeadline(time.Now().Add(m.readTimeout))
 
 	reply := make([]byte, 1024)
 	m.conn.Read(reply)
